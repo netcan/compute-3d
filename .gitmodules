@@ -1,12 +1,3 @@
-[submodule "third-party/stb"]
-	path = third-party/stb
-	url = https://github.com/nothings/stb.git
-[submodule "third-party/SDL"]
-	path = third-party/SDL
-	url = https://github.com/libsdl-org/SDL.git
-[submodule "third-party/imgui"]
-	path = third-party/imgui
-	url = https://github.com/ocornut/imgui.git
 [submodule "third_party/imgui"]
 	path = third_party/imgui
 	url = https://github.com/ocornut/imgui.git

@@ -1,0 +1,11 @@
+compile_commands.json
+.DS_Store
+*.dSym
+*.o
+*.out
+*.gch
+build-*/
+target/
+.cache
+tt*
+objects/

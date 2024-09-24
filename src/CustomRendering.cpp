@@ -64,10 +64,10 @@ void Canvas::bresenhamLine(Point2i p0, Point2i p1, const Color& color) {
 
 void CustomRendering::wireFrameDraw()
 {
-    for (const auto& face: shader_.faces()) {
+    for (const auto& face: textureShader_.faces()) {
         std::array<Point3i, 3> screenCoords;
         for (size_t i = 0; i < std::size(screenCoords); ++i) {
-            screenCoords[i] = shader_.vertex(face[i]);
+            screenCoords[i] = textureShader_.vertex(face[i]);
         }
         for (int i = 0; i < std::size(screenCoords); i++) {
             canvas_.bresenhamLine(screenCoords[i], screenCoords[(i + 1) % 3], color_);
@@ -94,6 +94,7 @@ static constexpr Point3f barycentric(Point2i a, Point2i b, Point2i c, Point2i p)
 
 }
 
+template<typename Shader>
 void Canvas::triangle(const std::array<Point3i, 3> &vertex, const Shader &shader, ZBuffer &zbuffer) {
     const auto &[va, vb, vc] = vertex;
     auto [minx, maxx] = std::minmax({va.x_(), vb.x_(), vc.x_()});
@@ -120,14 +121,14 @@ void Canvas::triangle(const std::array<Point3i, 3> &vertex, const Shader &shader
     }
 }
 
-void CustomRendering::triangleDraw() {
+void CustomRendering::textureDraw() {
     ZBuffer zbuffer((width_ + 1) * (height_ + 1), std::numeric_limits<ZBuffer::value_type>::min());
-    for (auto& face: shader_.faces()) {
+    for (auto& face: textureShader_.faces()) {
         std::array<Point3i, 3> screenCoords;
         for (size_t i = 0; i < std::size(screenCoords); ++i) {
-            screenCoords[i] = shader_.vertex(face[i]);
+            screenCoords[i] = textureShader_.vertex(face[i]);
         }
-        canvas_.triangle(screenCoords, shader_, zbuffer);
+        canvas_.triangle(screenCoords, textureShader_, zbuffer);
     }
 
     viewerController();
@@ -142,7 +143,7 @@ void CustomRendering::viewerController() {
     ImGui::DragFloat3("cameraUp", cameraUp_.data, 0, -5, 5);
     ImGui::DragFloat3("cameraO", cameraO_.data, 0, -5, 5);
     ImGui::DragInt2("viewO", viewO_.data, 0, -width_, width_);
-    shader_.dumpInfo(Shader::MatrixInfo);
+    textureShader_.dumpInfo(TextureShader::MatrixInfo);
     ImGui::End();
 }
 
@@ -169,7 +170,7 @@ void CustomRendering::dumpZbuffer(const ZBuffer& zbuffer) {
 
 static constexpr const char* RenderItems[] = {
     [CustomRendering::WireFrameDraw] = "wire frame draw",
-    [CustomRendering::TriangleRasterization] = "triangle rasterization",
+    [CustomRendering::TextureDraw] = "rasterization",
 };
 
 void CustomRendering::updateWindowSize()
@@ -199,19 +200,19 @@ void CustomRendering::draw() {
     ImGui::ColorEdit3("color", color.data);
     ImGui::Combo("renderType", (int *)&renderType_, RenderItems, std::size(RenderItems));
     color_ = color * 255;
-    shader_.dumpInfo(Shader::ModelInfo);
+    textureShader_.dumpInfo(TextureShader::ModelInfo);
     updateWindowSize();
 
-    shader_.updateM(viewport(viewO_, width_, height_, -1, 1), projection(camera_.norm()),
-                    lookat(camera_, cameraUp_, cameraO_));
+    textureShader_.updateM(viewport(viewO_, width_, height_, -1, 1), projection(camera_.norm()),
+                           lookat(camera_, cameraUp_, cameraO_));
 
     switch (renderType_) {
         case WireFrameDraw: {
             wireFrameDraw();
             break;
         }
-        case TriangleRasterization: {
-            triangleDraw();
+        case TextureDraw: {
+            textureDraw();
             break;
         }
     }

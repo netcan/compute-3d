@@ -30,7 +30,10 @@ struct Canvas {
     }
 
     void drawPixel(Point2i p, const Color& color);
+
+    template<typename Shader>
     void triangle(const std::array<Point3i, 3> &vertex, const Shader &shader, ZBuffer &zbuffer);
+
     void bresenhamLine(Point2i p0, Point2i p1, const Color &color);
 
 private:
@@ -45,14 +48,14 @@ struct CustomRendering {
 
     enum RenderType: int {
         WireFrameDraw,
-        TriangleRasterization,
+        TextureDraw,
     };
 
 private:
     void wireFrameDraw();
 
 private:
-    void triangleDraw();
+    void textureDraw();
     void dumpZbuffer(const ZBuffer& zbuffer);
     void dumpLight();
     void viewerController();
@@ -71,8 +74,8 @@ private:
     Canvas canvas_ { width_, height_, render_ };
     Canvas zbufferCanvas_ { width_, height_, render_ };
 
-    Shader shader_ {light_};
+    TextureShader textureShader_ {light_};
     Color color_ {255, 255, 255};
-    RenderType renderType_ {TriangleRasterization};
+    RenderType renderType_ {TextureDraw};
 };
 

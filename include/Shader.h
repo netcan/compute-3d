@@ -19,8 +19,8 @@ inline const char* LoadEnv(const char* name, const char* defaultValue = "") {
     return defaultValue;
 }
 
-struct Shader {
-    Shader(const Vec3f& light) : light_(light) {}
+struct TextureShader {
+    TextureShader(const Vec3f& light) : light_(light) {}
     const auto& faces() const { return model_.faces_; }
 
     Point3i vertex(const Model::FaceIndex& index) {

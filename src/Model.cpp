@@ -45,29 +45,34 @@ Model::Model(const char *filename) {
 }
 
 void Model::handleFace(std::string_view line) {
-    std::vector<FaceIndex> f;
-    for (auto nface: line | std::views::drop(2) | std::views::split(' ')) {
-        FaceIndex index{.nth = f.size()};
-        auto v = nface | std::views::split('/');
+    size_t nth = 0;
+    // clang-format off
+    auto f = line
+        | std::views::drop(2)
+        | std::views::split(' ')
+        | std::views::transform([&](auto&& nface) {
+            FaceIndex index{.nth = nth++};
+            auto v = nface | std::views::split('/');
+            auto vit = v.begin();
+            if (vit != v.end()) {
+                std::from_chars((*vit).begin(), (*vit).end(), index.vIndex);
+                --index.vIndex;
+            }
 
-        auto vit = v.begin();
-        if (vit != v.end()) {
-            std::from_chars((*vit).begin(), (*vit).end(), index.vIndex);
-            --index.vIndex;
-        }
+            if (++vit != v.end()) {
+                std::from_chars((*vit).begin(), (*vit).end(), index.uvIndex);
+                --index.uvIndex;
+            }
 
-        if (++vit != v.end()) {
-            std::from_chars((*vit).begin(), (*vit).end(), index.uvIndex);
-            --index.uvIndex;
-        }
+            if (++vit != v.end()) {
+                std::from_chars((*vit).begin(), (*vit).end(), index.nIndex);
+                --index.nIndex;
+            }
+            return index;
+        })
+        | std::ranges::to<std::vector<FaceIndex>>();
+    // clang-format on
 
-        if (++vit != v.end()) {
-            std::from_chars((*vit).begin(), (*vit).end(), index.nIndex);
-            --index.nIndex;
-        }
-        f.push_back(index);
-
-    }
     assert(f.size() == 3);
     faces_.push_back(f);
 

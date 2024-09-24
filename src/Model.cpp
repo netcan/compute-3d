@@ -7,9 +7,11 @@
 ************************************************************************/
 #include "Model.h"
 #include <cassert>
+#include <charconv>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <ranges>
 
 Model::Model(const char *filename) {
     std::ifstream in;
@@ -37,16 +39,36 @@ Model::Model(const char *filename) {
             iss >> v.x_() >> v.y_();
             uv_.push_back(v);
         } else if (line.starts_with("f ")) {
-            std::vector<FaceIndex> f;
-            FaceIndex index;
-            iss >> trash;
-            size_t nth = 0;
-            while (iss >> index.vIndex >> trash >> index.uvIndex >> trash >> index.nIndex) {
-                f.push_back({nth++, index.vIndex - 1, index.uvIndex - 1, index.nIndex - 1});
-            }
-            assert(nth == 3);
-            faces_.push_back(f);
+            handleFace(line);
         }
     }
 }
 
+void Model::handleFace(std::string_view line) {
+    std::vector<FaceIndex> f;
+    for (auto nface: line | std::views::drop(2) | std::views::split(' ')) {
+        FaceIndex index{.nth = f.size()};
+        auto v = nface | std::views::split('/');
+
+        auto vit = v.begin();
+        if (vit != v.end()) {
+            std::from_chars((*vit).begin(), (*vit).end(), index.vIndex);
+            --index.vIndex;
+        }
+
+        if (++vit != v.end()) {
+            std::from_chars((*vit).begin(), (*vit).end(), index.uvIndex);
+            --index.uvIndex;
+        }
+
+        if (++vit != v.end()) {
+            std::from_chars((*vit).begin(), (*vit).end(), index.nIndex);
+            --index.nIndex;
+        }
+        f.push_back(index);
+
+    }
+    assert(f.size() == 3);
+    faces_.push_back(f);
+
+}

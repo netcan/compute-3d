@@ -58,7 +58,8 @@ private:
     void textureDraw();
     void dumpZbuffer(const ZBuffer& zbuffer);
     void dumpLight();
-    void viewerController();
+    template<typename Shader>
+    void viewerController(const Shader& shader);
 
 private:
     SDL_Renderer *render_ {};

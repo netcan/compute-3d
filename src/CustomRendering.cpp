@@ -131,19 +131,20 @@ void CustomRendering::textureDraw() {
         canvas_.triangle(screenCoords, textureShader_, zbuffer);
     }
 
-    viewerController();
+    viewerController(textureShader_);
     dumpZbuffer(zbuffer);
     dumpLight();
 }
 
-void CustomRendering::viewerController() {
+template<typename Shader>
+void CustomRendering::viewerController(const Shader& shader) {
     ImGui::Begin(__FUNCTION__);
     ImGui::DragFloat3("light", light_.data, 0, -1, 1);
     ImGui::DragFloat3("camera", camera_.data, 0, -5, 5);
     ImGui::DragFloat3("cameraUp", cameraUp_.data, 0, -5, 5);
     ImGui::DragFloat3("cameraO", cameraO_.data, 0, -5, 5);
     ImGui::DragInt2("viewO", viewO_.data, 0, -width_, width_);
-    textureShader_.dumpInfo(TextureShader::MatrixInfo);
+    shader.dumpInfo(TextureShader::MatrixInfo);
     ImGui::End();
 }
 

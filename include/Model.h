@@ -27,6 +27,10 @@ struct Model {
 	std::vector<Vec2f> uv_;
 	std::vector<Vec3f> normal_;
 	std::vector<std::vector<FaceIndex> > faces_;
+
+private:
+    void handleFace(std::string_view line);
+
 };
 
 struct Texture {

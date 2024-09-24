@@ -25,11 +25,16 @@ struct TextureShader {
 
     Point3i vertex(const Model::FaceIndex& index) {
         auto        v      = model_.verts_[index.vIndex].toHomogeneous();
-        const auto& uv     = model_.uv_[index.uvIndex];
-        Vec3f normal = Vec4f(uniformMIT_ * model_.normal_[index.nIndex].toHomogeneous());
 
-        varyingUv_.setCol(index.nth, Vec2i(uv.x_() * diffuse_.width_, uv.y_() * diffuse_.height_));
-        varyingNormal_.setCol(index.nth, normal);
+        if (index.uvIndex < model_.uv_.size()) {
+            const auto& uv     = model_.uv_[index.uvIndex];
+            varyingUv_.setCol(index.nth, Vec2i(uv.x_() * diffuse_.width_, uv.y_() * diffuse_.height_));
+        }
+
+        if (index.nIndex < model_.normal_.size()) {
+            Vec3f normal = Vec4f(uniformMIT_ * model_.normal_[index.nIndex].toHomogeneous());
+            varyingNormal_.setCol(index.nth, normal);
+        }
 
         return (viewport_ * uniformM_ * v).toV().toAffine();
     }
